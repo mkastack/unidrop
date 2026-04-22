@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CATEGORIES } from "@/lib/categories";
 import { formatGHS } from "@/lib/cart";
 import { toast } from "sonner";
+import { ImageUploader } from "@/components/marketplace/ImageUploader";
 
 const NAV = [
   { to: "/dashboard/seller", label: "Overview", icon: Package },
@@ -33,7 +34,8 @@ export default function SellerDashboard() {
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ title: "", description: "", price: "", category: "Food", stock: "1", pickup_location: "", image: "" });
+  const [form, setForm] = useState({ title: "", description: "", price: "", category: "Food", stock: "1", pickup_location: "" });
+  const [images, setImages] = useState<string[]>([]);
 
   const load = async () => {
     if (!user) return;
@@ -56,12 +58,13 @@ export default function SellerDashboard() {
     const { error } = await supabase.from("products").insert({
       seller_id: user.id, title: form.title, description: form.description,
       price: Number(form.price), category: form.category, stock: Number(form.stock),
-      pickup_location: form.pickup_location, images: form.image ? [form.image] : [],
+      pickup_location: form.pickup_location, images,
     });
     if (error) return toast.error(error.message);
     toast.success("Product listed!");
     setOpen(false);
-    setForm({ title: "", description: "", price: "", category: "Food", stock: "1", pickup_location: "", image: "" });
+    setForm({ title: "", description: "", price: "", category: "Food", stock: "1", pickup_location: "" });
+    setImages([]);
     load();
   };
 
@@ -118,7 +121,7 @@ export default function SellerDashboard() {
                   </Select>
                 </div>
                 <div><Label>Pickup location</Label><Input value={form.pickup_location} onChange={(e) => setForm({ ...form, pickup_location: e.target.value })} placeholder="e.g. Hall 5, Room 12" /></div>
-                <div><Label>Image URL</Label><Input value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} placeholder="https://…" /></div>
+                <div><Label>Photos</Label><ImageUploader value={images} onChange={setImages} /></div>
                 <Button type="submit" className="w-full bg-gradient-amber text-accent-foreground shadow-amber">Publish listing</Button>
               </form>
             </DialogContent>

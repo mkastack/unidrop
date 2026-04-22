@@ -39,6 +39,18 @@ export default function Cart() {
       const { error } = await supabase.from("orders").insert(inserts);
       if (error) throw error;
 
+      // Auto-assign delivery agent for campus delivery orders
+      if (delivery === "campus_delivery") {
+        const { data: created } = await supabase.from("orders")
+          .select("id").eq("buyer_id", user.id)
+          .order("created_at", { ascending: false }).limit(cart.length);
+        if (created) {
+          await Promise.all(created.map((o: any) =>
+            supabase.rpc("assign_random_delivery_agent", { _order_id: o.id })
+          ));
+        }
+      }
+
       // Notify each seller (one per unique seller)
       const sellers = Array.from(new Set(cart.map((c) => c.sellerId)));
       await supabase.from("notifications").insert(
