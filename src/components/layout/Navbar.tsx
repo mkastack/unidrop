@@ -114,7 +114,7 @@ export function Navbar() {
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-amber text-slate-950 shadow-amber">
               <Store className="h-5 w-5" />
             </span>
-            <span className={`hidden sm:inline transition-colors duration-300 ${!isScrolled && location.pathname === "/" ? "text-white" : "text-foreground"}`}>UniDrop</span>
+            <span className={`hidden sm:inline transition-colors duration-300 ${(!isScrolled && location.pathname === "/") ? (dark ? "text-white" : "text-slate-900") : "text-foreground"}`}>UniDrop</span>
           </Link>
 
           <nav className="hidden items-center gap-1 lg:flex">
@@ -125,7 +125,7 @@ export function Navbar() {
                   className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                     location.pathname === link.to 
                       ? "text-accent font-bold" 
-                      : (!isScrolled && location.pathname === "/" ? "text-white/80 hover:text-white" : "text-muted-foreground hover:text-foreground")
+                      : (!isScrolled && location.pathname === "/" ? (dark ? "text-white/80 hover:text-white" : "text-slate-600 hover:text-slate-900") : "text-muted-foreground hover:text-foreground")
                   }`}
                 >
                   {link.label}
@@ -139,7 +139,7 @@ export function Navbar() {
                           value={search}
                           onChange={(e) => setSearch(e.target.value)}
                           placeholder="Search marketplace..." 
-                          className="h-9 w-[160px] md:w-[200px] rounded-full border-border/40 bg-muted/40 pl-9 pr-3 text-[11px] font-medium focus:w-[220px] md:focus:w-[280px] focus:bg-background focus:ring-accent/20 transition-all shadow-inner"
+                          className="h-9 w-[160px] md:w-[200px] rounded-full border-border/40 bg-muted/60 pl-9 pr-3 text-[11px] font-medium focus:w-[220px] md:focus:w-[280px] focus:bg-background focus:ring-accent/20 transition-all shadow-inner placeholder:text-muted-foreground/80"
                         />
                       </form>
 

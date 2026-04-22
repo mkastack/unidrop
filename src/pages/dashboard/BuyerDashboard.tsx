@@ -31,11 +31,18 @@ export default function BuyerDashboard() {
 
   const load = async () => {
     if (!user) return;
-    const { data } = await supabase.from("orders")
-      .select("*, products(title, images, price)")
-      .eq("buyer_id", user.id).order("created_at", { ascending: false });
-    setOrders(data ?? []);
-    setLoading(false);
+    try {
+      const { data, error } = await supabase.from("orders")
+        .select("*, products(title, images, price)")
+        .eq("buyer_id", user.id).order("created_at", { ascending: false });
+      
+      if (error) throw error;
+      setOrders(data ?? []);
+    } catch (error: any) {
+      console.error("Error loading orders:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -125,7 +132,7 @@ export default function BuyerDashboard() {
                           {config.label}
                         </Badge>
                         <div className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1">
-                          <MapPin className="h-3 w-3" /> Delivery to {o.hall_location || "selected hall"}
+                          <MapPin className="h-3 w-3" /> {o.delivery_type === 'self_pickup' ? 'Self Pickup' : `Delivery to ${o.hall_location || "selected hall"}`}
                         </div>
                       </div>
                     </div>

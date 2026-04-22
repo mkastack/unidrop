@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Trash2, Truck, MapPin, Loader2, CreditCard, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { usePaystackPayment } from "react-paystack";
-import { getPaystackConfig } from "@/lib/paystack";
 
 export default function Cart() {
   const cart = useCart();
@@ -20,55 +19,94 @@ export default function Cart() {
   const [delivery, setDelivery] = useState<"campus_delivery" | "self_pickup">("self_pickup");
   const [placing, setPlacing] = useState(false);
 
+  const cartRef = useRef(cart);
+  const userRef = useRef(user);
+
+  useEffect(() => {
+    cartRef.current = cart;
+    userRef.current = user;
+  }, [cart, user]);
+
   const subtotal = cart.reduce((s, c) => s + c.price * c.quantity, 0);
   const deliveryFee = delivery === "campus_delivery" ? 5 : 0;
   const total = subtotal + deliveryFee;
 
-  const config = getPaystackConfig(user?.email || "", total, (ref) => {
-    checkout();
-  });
-  const initializePayment = usePaystackPayment(config);
+  const paystackConfig = {
+    email: user?.email || "",
+    amount: Math.round(total * 100),
+    publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || "pk_test_placeholder",
+    currency: "GHS",
+  };
 
-  const checkout = async () => {
-    if (!user) { navigate("/auth"); return; }
-    if (primaryRole === "seller") { toast.error("Sellers can't place orders. Switch accounts to buy."); return; }
+  const initializePayment = usePaystackPayment(paystackConfig);
+
+  const onSuccess = (reference: any) => {
+    console.log("Paystack Success:", reference);
+    handleCheckoutSuccess();
+  };
+
+  const onClose = () => {
+    setPlacing(false);
+    toast.error("Payment cancelled");
+  };
+
+  const handleCheckoutSuccess = async () => {
+    const currentUser = userRef.current;
+    const currentCart = cartRef.current;
+
+    if (!currentUser || currentCart.length === 0) {
+      toast.error("Critical error: Order details lost. Please contact support.");
+      return;
+    }
+
     setPlacing(true);
+    const loadingToast = toast.loading("Finalizing your order... Please do not close this page.");
+
     try {
-      const inserts = cart.map((item) => ({
-        buyer_id: user.id,
+      const hall = localStorage.getItem("unidrop:location") || "Main Campus";
+      const inserts = currentCart.map((item) => ({
+        buyer_id: currentUser.id,
         seller_id: item.sellerId,
         product_id: item.productId,
         quantity: item.quantity,
-        total_price: item.price * item.quantity + (delivery === "campus_delivery" ? 5 / cart.length : 0),
+        total_price: item.price * item.quantity + (delivery === "campus_delivery" ? 5 / currentCart.length : 0),
         delivery_type: delivery,
+        hall_location: hall,
         status: "placed" as const,
       }));
-      const { error } = await supabase.from("orders").insert(inserts);
+
+      const { data: created, error } = await (supabase.from("orders") as any).insert(inserts).select("id");
+      
       if (error) throw error;
+      if (!created || created.length === 0) throw new Error("Order not saved.");
 
-      // Auto-assign delivery agent for campus delivery orders
-      if (delivery === "campus_delivery") {
-        const { data: created } = await supabase.from("orders")
-          .select("id").eq("buyer_id", user.id)
-          .order("created_at", { ascending: false }).limit(cart.length);
-        if (created) {
-          await Promise.all(created.map((o: any) =>
-            supabase.rpc("assign_random_delivery_agent", { _order_id: o.id })
-          ));
-        }
-      }
-
-      // Notify each seller (one per unique seller)
-      const sellers = Array.from(new Set(cart.map((c) => c.sellerId)));
-      await supabase.from("notifications").insert(
-        sellers.map((sid) => ({ user_id: sid, message: "You have a new order on CampusMarkt 🎉" }))
-      );
-
+      const orderIds = created.map((o: any) => o.id);
+      
+      // Clear cart immediately after DB success
+      console.log("Order saved. Clearing cart...");
       clearCart();
-      toast.success("Order placed! Sellers have been notified.");
-      navigate("/dashboard/buyer");
+
+      // Background tasks (non-blocking)
+      try {
+        if (delivery === "campus_delivery") {
+          orderIds.forEach((id: string) => supabase.rpc("assign_random_delivery_agent", { _order_id: id }));
+        }
+        const sellers = Array.from(new Set(currentCart.map((c) => c.sellerId)));
+        supabase.from("notifications").insert(sellers.map((sid) => ({ user_id: sid, message: "New order! 🎉" })));
+      } catch (bgError) { console.warn("Background task error:", bgError); }
+
+      toast.dismiss(loadingToast);
+      toast.success("Success! Redirecting...");
+      
+      // Force hard redirect to be 100% sure
+      setTimeout(() => {
+        window.location.href = `/order-success?ids=${orderIds.join(",")}`;
+      }, 500);
+
     } catch (e: any) {
-      toast.error(e.message ?? "Could not place order");
+      toast.dismiss(loadingToast);
+      console.error("Critical Failure:", e);
+      toast.error(`Order Placement Error: ${e.message}. Your payment was successful, please contact support.`);
     } finally {
       setPlacing(false);
     }
@@ -131,10 +169,17 @@ export default function Cart() {
 
               <Button 
                 onClick={() => {
+                  // Sellers are allowed to buy too
                   if (!user) { navigate("/auth"); return; }
-                  if (primaryRole === "seller") { toast.error("Sellers can't place orders."); return; }
+                  
+                  if (!paystackConfig.email || paystackConfig.publicKey === "pk_test_placeholder") {
+                    toast.error("Payment setup incomplete. Please contact support.");
+                    console.error("Missing Paystack config:", paystackConfig);
+                    return;
+                  }
+
                   // @ts-ignore
-                  initializePayment();
+                  initializePayment(onSuccess, onClose);
                 }} 
                 disabled={placing} 
                 size="lg" 

@@ -18,6 +18,7 @@ import BuyerDashboard from "./pages/dashboard/BuyerDashboard";
 import DeliveryDashboard from "./pages/dashboard/DeliveryDashboard";
 import AdminDashboard from "./pages/dashboard/AdminDashboard";
 import CategoryPage from "./pages/CategoryPage";
+import OrderSuccess from "./pages/OrderSuccess";
 
 const queryClient = new QueryClient();
 
@@ -36,9 +37,10 @@ const App = () => (
             <Route path="/category/:category" element={<CategoryPage />} />
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/cart" element={<Cart />} />
+            <Route path="/order-success" element={<OrderSuccess />} />
             <Route path="/notifications" element={<RequireAuth><Notifications /></RequireAuth>} />
             <Route path="/dashboard/seller" element={<RequireAuth allow={["seller", "admin"]}><SellerDashboard /></RequireAuth>} />
-            <Route path="/dashboard/buyer" element={<RequireAuth allow={["buyer", "admin"]}><BuyerDashboard /></RequireAuth>} />
+            <Route path="/dashboard/buyer" element={<RequireAuth><BuyerDashboard /></RequireAuth>} />
             <Route path="/dashboard/delivery" element={<RequireAuth allow={["delivery", "admin"]}><DeliveryDashboard /></RequireAuth>} />
             <Route path="/dashboard/admin" element={<RequireAuth allow={["admin"]}><AdminDashboard /></RequireAuth>} />
             <Route path="*" element={<NotFound />} />
