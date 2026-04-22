@@ -11,6 +11,7 @@ interface AuthContextValue {
   primaryRole: AppRole | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  refreshRoles: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -21,14 +22,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchRoles = async (userId: string) => {
+    const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+    setRoles((data ?? []).map((r) => r.role as AppRole));
+  };
+
+  const refreshRoles = async () => {
+    if (user) await fetchRoles(user.id);
+  };
+
   useEffect(() => {
-    // CRITICAL: set up listener FIRST, then fetch session
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
-      setUser(newSession?.user ?? null);
-      if (newSession?.user) {
-        // defer with setTimeout to avoid deadlock
-        setTimeout(() => fetchRoles(newSession.user.id), 0);
+      const newUser = newSession?.user ?? null;
+      setUser(newUser);
+      if (newUser) {
+        fetchRoles(newUser.id);
       } else {
         setRoles([]);
       }
@@ -36,18 +45,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       setSession(s);
-      setUser(s?.user ?? null);
-      if (s?.user) fetchRoles(s.user.id);
+      const newUser = s?.user ?? null;
+      setUser(newUser);
+      if (newUser) fetchRoles(newUser.id);
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
-
-  const fetchRoles = async (userId: string) => {
-    const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
-    setRoles((data ?? []).map((r) => r.role as AppRole));
-  };
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -61,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     roles.includes("buyer") ? "buyer" : null;
 
   return (
-    <AuthContext.Provider value={{ user, session, roles, primaryRole, loading, signOut }}>
+    <AuthContext.Provider value={{ user, session, roles, primaryRole, loading, signOut, refreshRoles }}>
       {children}
     </AuthContext.Provider>
   );

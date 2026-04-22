@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { RequireAuth } from "@/components/RequireAuth";
+import { NotificationHandler } from "@/components/NotificationHandler";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
@@ -16,6 +17,7 @@ import SellerDashboard from "./pages/dashboard/SellerDashboard";
 import BuyerDashboard from "./pages/dashboard/BuyerDashboard";
 import DeliveryDashboard from "./pages/dashboard/DeliveryDashboard";
 import AdminDashboard from "./pages/dashboard/AdminDashboard";
+import CategoryPage from "./pages/CategoryPage";
 
 const queryClient = new QueryClient();
 
@@ -26,10 +28,12 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <NotificationHandler />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/shop" element={<Shop />} />
+            <Route path="/category/:category" element={<CategoryPage />} />
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/notifications" element={<RequireAuth><Notifications /></RequireAuth>} />

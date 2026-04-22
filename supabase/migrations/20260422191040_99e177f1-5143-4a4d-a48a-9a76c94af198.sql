@@ -46,7 +46,7 @@ BEGIN
   IF agent IS NOT NULL THEN
     UPDATE public.orders SET delivery_agent_id = agent WHERE id = _order_id;
     INSERT INTO public.notifications (user_id, message)
-    VALUES (agent, 'New delivery assigned to you on Tradie 🚴');
+    VALUES (agent, 'New delivery assigned to you on CampusMarkt 🚴');
   END IF;
   RETURN agent;
 END; $$;

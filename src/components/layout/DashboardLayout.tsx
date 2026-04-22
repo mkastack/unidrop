@@ -27,7 +27,7 @@ export function DashboardLayout({ title, navItems, children }: Props) {
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-amber text-primary">
             <Store className="h-4 w-4" />
           </span>
-          Tradie
+          UniDrop
         </div>
         <div className="px-4 py-4 text-xs uppercase tracking-wider text-sidebar-foreground/50">
           {title}

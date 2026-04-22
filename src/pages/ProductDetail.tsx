@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { addToCart, formatGHS } from "@/lib/cart";
 import { MapPin, ShoppingCart, ArrowLeft, Store } from "lucide-react";
 import { toast } from "sonner";
+import { optimizeImage } from "@/lib/images";
 import { Reviews } from "@/components/marketplace/Reviews";
 
 interface Product {
@@ -46,6 +47,8 @@ export default function ProductDetail() {
     toast.success("Added to cart");
   };
 
+  const mainImg = optimizeImage(product.images?.[0], 1000);
+
   return (
     <PublicLayout>
       <div className="container py-8">
@@ -56,7 +59,7 @@ export default function ProductDetail() {
         <div className="grid gap-10 lg:grid-cols-2">
           <div className="overflow-hidden rounded-3xl bg-muted shadow-card">
             {product.images?.[0] ? (
-              <img src={product.images[0]} alt={product.title} className="aspect-square w-full object-cover" />
+              <img src={mainImg} alt={product.title} className="aspect-square w-full object-cover" />
             ) : (
               <div className="grid aspect-square place-items-center text-muted-foreground">No image</div>
             )}

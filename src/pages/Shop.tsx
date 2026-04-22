@@ -11,30 +11,41 @@ import { Search } from "lucide-react";
 export default function Shop() {
   const [params, setParams] = useSearchParams();
   const initialCat = params.get("cat") ?? "All";
+  const initialQuery = params.get("q") ?? "";
+  
   const [products, setProducts] = useState<ProductCardData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState(initialQuery);
   const [category, setCategory] = useState<string>(initialCat);
 
   useEffect(() => {
     setLoading(true);
-    let q = supabase.from("products").select("id,title,price,category,images,pickup_location,stock").eq("status", "active");
-    if (category !== "All") q = q.eq("category", category);
+    let q = supabase.from("products")
+      .select("id,title,price,category,images,pickup_location,stock")
+      .eq("status", "active");
+
+    if (category !== "All") {
+      q = q.eq("category", category);
+    }
+
+    if (searchTerm.trim()) {
+      q = q.ilike("title", `%${searchTerm}%`);
+    }
+
     q.order("created_at", { ascending: false }).then(({ data }) => {
       setProducts((data ?? []) as ProductCardData[]);
       setLoading(false);
     });
-  }, [category]);
+  }, [category, searchTerm]);
 
   useEffect(() => {
-    if (category === "All") params.delete("cat"); else params.set("cat", category);
-    setParams(params, { replace: true });
-  }, [category]);
+    const nextParams = new URLSearchParams(params);
+    if (category === "All") nextParams.delete("cat"); else nextParams.set("cat", category);
+    if (!searchTerm) nextParams.delete("q"); else nextParams.set("q", searchTerm);
+    setParams(nextParams, { replace: true });
+  }, [category, searchTerm]);
 
-  const filtered = useMemo(
-    () => products.filter((p) => p.title.toLowerCase().includes(search.toLowerCase())),
-    [products, search]
-  );
+  const filtered = products;
 
   return (
     <PublicLayout>
@@ -44,7 +55,7 @@ export default function Shop() {
           <p className="mt-1 text-muted-foreground">Discover what fellow students are selling today.</p>
           <div className="relative mt-6 max-w-xl">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input value={search} onChange={(e) => setSearch(e.target.value)}
+            <Input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search products…" className="h-12 pl-10" />
           </div>
         </div>

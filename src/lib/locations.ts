@@ -1,0 +1,17 @@
+export const CAMPUS_HALLS = [
+  "Akuafo Hall",
+  "Mensah Sarbah Hall",
+  "Legon Hall",
+  "Volta Hall",
+  "Commonwealth Hall",
+  "Elizabeth Frances Sey Hall",
+  "Alexander Kwapong Hall",
+  "Jean Nelson Aka Hall",
+  "Hilla Limann Hall",
+  "Unity Hall",
+  "University Hall",
+  "Republic Hall",
+  "Independence Hall",
+  "Queens Hall",
+  "Africa Hall",
+];

@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin } from "lucide-react";
 import { formatGHS } from "@/lib/cart";
+import { optimizeImage } from "@/lib/images";
 
 export interface ProductCardData {
   id: string;
@@ -15,12 +16,12 @@ export interface ProductCardData {
 }
 
 export function ProductCard({ product }: { product: ProductCardData }) {
-  const img = product.images?.[0];
+  const img = optimizeImage(product.images?.[0], 600);
   return (
     <Link to={`/product/${product.id}`} className="group">
       <Card className="overflow-hidden border-border/60 bg-card shadow-soft transition-all hover:-translate-y-1 hover:shadow-card">
         <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-          {img ? (
+          {product.images?.[0] ? (
             <img src={img} alt={product.title} loading="lazy"
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
           ) : (

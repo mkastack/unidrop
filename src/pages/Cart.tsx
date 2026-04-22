@@ -8,8 +8,10 @@ import { Label } from "@/components/ui/label";
 import { useCart, removeFromCart, formatGHS, clearCart } from "@/lib/cart";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Trash2, Truck, MapPin, Loader2 } from "lucide-react";
+import { Trash2, Truck, MapPin, Loader2, CreditCard, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
+import { usePaystackPayment } from "react-paystack";
+import { getPaystackConfig } from "@/lib/paystack";
 
 export default function Cart() {
   const cart = useCart();
@@ -21,6 +23,11 @@ export default function Cart() {
   const subtotal = cart.reduce((s, c) => s + c.price * c.quantity, 0);
   const deliveryFee = delivery === "campus_delivery" ? 5 : 0;
   const total = subtotal + deliveryFee;
+
+  const config = getPaystackConfig(user?.email || "", total, (ref) => {
+    checkout();
+  });
+  const initializePayment = usePaystackPayment(config);
 
   const checkout = async () => {
     if (!user) { navigate("/auth"); return; }
@@ -54,7 +61,7 @@ export default function Cart() {
       // Notify each seller (one per unique seller)
       const sellers = Array.from(new Set(cart.map((c) => c.sellerId)));
       await supabase.from("notifications").insert(
-        sellers.map((sid) => ({ user_id: sid, message: "You have a new order on Tradie 🎉" }))
+        sellers.map((sid) => ({ user_id: sid, message: "You have a new order on CampusMarkt 🎉" }))
       );
 
       clearCart();
@@ -122,10 +129,24 @@ export default function Cart() {
                 <div className="flex justify-between border-t border-border pt-2 font-display text-lg font-bold"><span>Total</span><span>{formatGHS(total)}</span></div>
               </div>
 
-              <Button onClick={checkout} disabled={placing} size="lg" className="w-full bg-gradient-amber text-accent-foreground shadow-amber hover:opacity-95">
-                {placing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Place order"}
+              <Button 
+                onClick={() => {
+                  if (!user) { navigate("/auth"); return; }
+                  if (primaryRole === "seller") { toast.error("Sellers can't place orders."); return; }
+                  // @ts-ignore
+                  initializePayment();
+                }} 
+                disabled={placing} 
+                size="lg" 
+                className="w-full bg-gradient-amber text-accent-foreground shadow-amber hover:opacity-95"
+              >
+                {placing ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+                  <><CreditCard className="mr-2 h-4 w-4" /> Pay & Place Order</>
+                )}
               </Button>
-              <p className="text-center text-xs text-muted-foreground">Paystack payments coming next phase.</p>
+              <p className="text-center text-xs text-muted-foreground flex items-center justify-center gap-1">
+                <ShieldCheck className="h-3 w-3" /> Secured by Paystack
+              </p>
             </Card>
           </div>
         )}

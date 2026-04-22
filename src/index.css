@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Tradie Design System — Deep Navy + Vibrant Amber */
+/* CampusMarkt Design System — Deep Navy + Vibrant Amber */
 @layer base {
   :root {
     /* Brand surfaces */
@@ -121,8 +121,17 @@
   .shadow-soft { box-shadow: var(--shadow-soft); }
   .shadow-card { box-shadow: var(--shadow-card); }
   .shadow-amber { box-shadow: var(--shadow-amber); }
+  .shadow-amber-lg { box-shadow: 0 10px 30px -10px rgba(245, 158, 11, 0.5); }
   .shadow-elevate { box-shadow: var(--shadow-elevate); }
   .text-balance { text-wrap: balance; }
+  
+  .glass {
+    @apply bg-white/70 backdrop-blur-md border border-white/20;
+  }
+  
+  .glass-dark {
+    @apply bg-black/40 backdrop-blur-lg border border-white/10;
+  }
 
   @keyframes fade-up {
     from { opacity: 0; transform: translateY(16px); }

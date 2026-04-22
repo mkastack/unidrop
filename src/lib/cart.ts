@@ -9,14 +9,14 @@ export interface CartItem {
   quantity: number;
 }
 
-const KEY = "tradie:cart";
+const KEY = "unidrop:cart";
 
 export function getCart(): CartItem[] {
   try { return JSON.parse(localStorage.getItem(KEY) ?? "[]"); } catch { return []; }
 }
 export function setCart(items: CartItem[]) {
   localStorage.setItem(KEY, JSON.stringify(items));
-  window.dispatchEvent(new Event("tradie:cart"));
+  window.dispatchEvent(new Event("unidrop:cart"));
 }
 export function addToCart(item: CartItem) {
   const cart = getCart();
@@ -34,10 +34,10 @@ export function useCart() {
   const [cart, setCartState] = useState<CartItem[]>(getCart());
   useEffect(() => {
     const handler = () => setCartState(getCart());
-    window.addEventListener("tradie:cart", handler);
+    window.addEventListener("unidrop:cart", handler);
     window.addEventListener("storage", handler);
     return () => {
-      window.removeEventListener("tradie:cart", handler);
+      window.removeEventListener("unidrop:cart", handler);
       window.removeEventListener("storage", handler);
     };
   }, []);
