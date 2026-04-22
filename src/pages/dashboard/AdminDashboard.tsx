@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatGHS } from "@/lib/cart";
 import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
+import { Megaphone, Send } from "lucide-react";
+import { useState as _useState } from "react";
 
 const NAV = [
   { to: "/dashboard/admin", label: "Overview", icon: BarChart3 },
@@ -19,6 +22,18 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
+  const [broadcast, setBroadcast] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const sendBroadcast = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSending(true);
+    const { data, error } = await supabase.rpc("broadcast_announcement", { _message: broadcast });
+    setSending(false);
+    if (error) return toast.error(error.message);
+    toast.success(`Sent to ${data} users`);
+    setBroadcast("");
+  };
 
   const load = async () => {
     const [{ data: u }, { data: p }, { data: o }] = await Promise.all([
@@ -55,7 +70,20 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+      <Card className="mt-8 p-5">
+        <div className="mb-3 flex items-center gap-2">
+          <Megaphone className="h-5 w-5 text-accent" />
+          <h2 className="font-display text-lg font-bold">Broadcast announcement</h2>
+        </div>
+        <form onSubmit={sendBroadcast} className="flex gap-2">
+          <Textarea value={broadcast} onChange={(e) => setBroadcast(e.target.value)} placeholder="Message to all users…" required className="flex-1" rows={2} />
+          <Button type="submit" disabled={sending || !broadcast} className="bg-gradient-amber text-accent-foreground shadow-amber">
+            <Send className="mr-2 h-4 w-4" /> Send
+          </Button>
+        </form>
+      </Card>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <Card className="p-5">
           <h2 className="mb-3 font-display text-lg font-bold">Recent users</h2>
           <div className="space-y-2">

@@ -227,6 +227,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assign_random_delivery_agent: {
+        Args: { _order_id: string }
+        Returns: string
+      }
+      broadcast_announcement: { Args: { _message: string }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

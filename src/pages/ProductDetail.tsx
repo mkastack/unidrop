@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { addToCart, formatGHS } from "@/lib/cart";
 import { MapPin, ShoppingCart, ArrowLeft, Store } from "lucide-react";
 import { toast } from "sonner";
+import { Reviews } from "@/components/marketplace/Reviews";
 
 interface Product {
   id: string; title: string; description: string | null; price: number;
@@ -86,6 +87,8 @@ export default function ProductDetail() {
             </Button>
           </div>
         </div>
+
+        <Reviews productId={product.id} sellerId={product.seller_id} />
       </div>
     </PublicLayout>
   );
