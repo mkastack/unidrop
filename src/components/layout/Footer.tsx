@@ -7,7 +7,10 @@ export function Footer() {
           <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-amber text-slate-950 shadow-amber"><Store className="h-5 w-5" /></span>
           UniDrop
         </div>
-        <p className="text-sm font-medium tracking-wide">© {new Date().getFullYear()} UniDrop. Built for campus.</p>
+        <div className="flex items-center gap-6">
+          <p className="text-sm font-medium tracking-wide">© {new Date().getFullYear()} UniDrop. Built for campus.</p>
+          <a href="/dashboard/admin" className="text-[10px] uppercase tracking-widest hover:text-accent transition-colors">Admin Access</a>
+        </div>
       </div>
     </footer>
   );
