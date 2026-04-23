@@ -118,90 +118,92 @@ export function Navbar() {
           </Link>
 
           <nav className="hidden items-center gap-1 lg:flex">
-            {NAV_LINKS.map((link, i) => (
-              <div key={link.to} className="flex items-center gap-1">
-                <Link
-                  to={link.to}
-                  className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                    location.pathname === link.to 
-                      ? "text-accent font-bold" 
-                      : (!isScrolled && location.pathname === "/" ? (dark ? "text-white/80 hover:text-white" : "text-slate-600 hover:text-slate-900") : "text-muted-foreground hover:text-foreground")
-                  }`}
-                >
-                  {link.label}
-                </Link>
-                {i === 1 && (
-                  <div className="flex items-center gap-2">
-                    <div className="relative mx-2">
-                      <form onSubmit={handleSearch} className="group relative">
-                        <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground group-focus-within:text-accent transition-colors" />
-                        <Input 
-                          value={search}
-                          onChange={(e) => setSearch(e.target.value)}
-                          placeholder="Search marketplace..." 
-                          className="h-9 w-[160px] md:w-[200px] rounded-full border-border/40 bg-muted/60 pl-9 pr-3 text-[11px] font-medium focus:w-[220px] md:focus:w-[280px] focus:bg-background focus:ring-accent/20 transition-all shadow-inner placeholder:text-muted-foreground/80"
-                        />
-                      </form>
-
-                      {/* Quick Search Results Dropdown */}
-                      {(searchResults.length > 0 || isSearching) && (
-                        <div className="absolute top-full left-0 mt-2 w-[280px] rounded-2xl border border-border bg-background p-2 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-                          {isSearching ? (
-                            <div className="p-4 text-center text-xs text-muted-foreground">Searching campus...</div>
-                          ) : (
-                            searchResults.map((p) => (
-                              <Link 
-                                key={p.id} 
-                                to={`/product/${p.id}`}
-                                onClick={() => setSearch("")}
-                                className="flex items-center gap-3 rounded-xl p-2 hover:bg-muted transition-colors"
-                              >
-                                <div className="h-10 w-10 overflow-hidden rounded-lg bg-muted">
-                                  {p.images?.[0] && <img src={p.images[0]} className="h-full w-full object-cover" />}
-                                </div>
-                                <div>
-                                  <div className="text-xs font-bold truncate max-w-[180px]">{p.title}</div>
-                                  <div className="text-[10px] text-accent font-semibold">GHS {p.price}</div>
-                                </div>
-                              </Link>
-                            ))
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    
-                    {(primaryRole === "buyer" || !user) && (
-                      <Dialog open={isLocModalOpen} onOpenChange={setIsLocModalOpen}>
-                        <DialogTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-9 gap-1.5 rounded-full border border-border/40 bg-muted/30 px-3 text-xs hover:bg-muted">
-                            <MapPin className="h-3.5 w-3.5 text-accent" />
-                            <span className="max-w-[80px] truncate">{currentHall}</span>
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-md">
-                          <DialogHeader>
-                            <DialogTitle>Select your Hall / Hostel</DialogTitle>
-                          </DialogHeader>
-                          <div className="grid grid-cols-1 gap-2 max-h-[400px] overflow-y-auto py-4">
-                            {CAMPUS_HALLS.map((hall) => (
-                              <Button 
-                                key={hall} 
-                                variant={currentHall === hall ? "default" : "outline"} 
-                                onClick={() => saveLocation(hall)}
-                                className="justify-start text-left"
-                              >
-                                {hall}
-                              </Button>
-                            ))}
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                    )}
-                  </div>
-                )}
-              </div>
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                  location.pathname === link.to 
+                    ? "text-accent font-bold" 
+                    : (!isScrolled && location.pathname === "/" ? (dark ? "text-white/80 hover:text-white" : "text-slate-600 hover:text-slate-900") : "text-muted-foreground hover:text-foreground")
+                }`}
+              >
+                {link.label}
+              </Link>
             ))}
           </nav>
+        </div>
+
+        {/* Search Bar - Center on mobile, Right-ish on desktop */}
+        <div className="flex-1 max-w-md mx-2 lg:mx-0 lg:max-w-none lg:flex lg:items-center lg:gap-2">
+          <div className="relative w-full lg:w-auto">
+            <form onSubmit={handleSearch} className="group relative">
+              <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground group-focus-within:text-accent transition-colors" />
+              <Input 
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search campus..." 
+                className="h-9 w-full lg:w-[180px] xl:w-[240px] rounded-full border-border/40 bg-muted/60 pl-9 pr-3 text-[11px] font-medium lg:focus:w-[240px] xl:focus:w-[320px] focus:bg-background focus:ring-accent/20 transition-all shadow-inner placeholder:text-muted-foreground/80"
+              />
+            </form>
+
+            {/* Quick Search Results Dropdown */}
+            {(searchResults.length > 0 || isSearching) && (
+              <div className="absolute top-full left-0 mt-2 w-full lg:w-[300px] rounded-2xl border border-border bg-background p-2 shadow-2xl animate-in fade-in zoom-in-95 duration-200 z-50">
+                {isSearching ? (
+                  <div className="p-4 text-center text-xs text-muted-foreground">Searching campus...</div>
+                ) : (
+                  searchResults.map((p) => (
+                    <Link 
+                      key={p.id} 
+                      to={`/product/${p.id}`}
+                      onClick={() => setSearch("")}
+                      className="flex items-center gap-3 rounded-xl p-2 hover:bg-muted transition-colors"
+                    >
+                      <div className="h-10 w-10 overflow-hidden rounded-lg bg-muted">
+                        {p.images?.[0] && <img src={p.images[0]} className="h-full w-full object-cover" />}
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold truncate max-w-[180px]">{p.title}</div>
+                        <div className="text-[10px] text-accent font-semibold">GHS {p.price}</div>
+                      </div>
+                    </Link>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+          
+          {/* Location Picker - Desktop only in this spot */}
+          <div className="hidden lg:block">
+            {(primaryRole === "buyer" || !user) && (
+              <Dialog open={isLocModalOpen} onOpenChange={setIsLocModalOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-9 gap-1.5 rounded-full border border-border/40 bg-muted/30 px-3 text-xs hover:bg-muted">
+                    <MapPin className="h-3.5 w-3.5 text-accent" />
+                    <span className="max-w-[80px] truncate">{currentHall}</span>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Select your Hall / Hostel</DialogTitle>
+                  </DialogHeader>
+                  <div className="grid grid-cols-1 gap-2 max-h-[400px] overflow-y-auto py-4">
+                    {CAMPUS_HALLS.map((hall) => (
+                      <Button 
+                        key={hall} 
+                        variant={currentHall === hall ? "default" : "outline"} 
+                        onClick={() => saveLocation(hall)}
+                        className="justify-start text-left"
+                      >
+                        {hall}
+                      </Button>
+                    ))}
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
         </div>
 
         <div className="flex flex-1 items-center justify-end gap-1.5 md:flex-none">
@@ -275,15 +277,35 @@ export function Navbar() {
                 </SheetTitle>
               </SheetHeader>
               <div className="mt-8 flex flex-col gap-2">
-                <form onSubmit={handleSearch} className="relative mb-4">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input 
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search products..." 
-                    className="h-11 rounded-xl pl-10"
-                  />
-                </form>
+                <div className="flex items-center justify-between mb-4">
+                  {(primaryRole === "buyer" || !user) && (
+                    <Dialog open={isLocModalOpen} onOpenChange={setIsLocModalOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-10 flex-1 gap-2 rounded-xl text-sm justify-start px-4">
+                          <MapPin className="h-4 w-4 text-accent" />
+                          <span className="truncate">{currentHall}</span>
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Select your Hall / Hostel</DialogTitle>
+                        </DialogHeader>
+                        <div className="grid grid-cols-1 gap-2 max-h-[400px] overflow-y-auto py-4">
+                          {CAMPUS_HALLS.map((hall) => (
+                            <Button 
+                              key={hall} 
+                              variant={currentHall === hall ? "default" : "outline"} 
+                              onClick={() => saveLocation(hall)}
+                              className="justify-start text-left"
+                            >
+                              {hall}
+                            </Button>
+                          ))}
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  )}
+                </div>
                 {NAV_LINKS.map((link) => (
                   <Link
                     key={link.to}
