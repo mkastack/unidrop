@@ -51,7 +51,7 @@ export default function AdminDashboard() {
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("products").select("*").order("created_at", { ascending: false }),
       supabase.from("orders").select("*").order("created_at", { ascending: false }),
-      (supabase.from("withdrawal_requests") as any).select("*, profiles(name, email)").order("created_at", { ascending: false }),
+      (supabase as any).from("withdrawal_requests").select("*, profiles(name, email)").order("created_at", { ascending: false }),
     ]);
     setUsers(u ?? []); 
     setProducts(p ?? []); 
@@ -70,7 +70,7 @@ export default function AdminDashboard() {
   };
 
   const updateWithdrawal = async (id: string, status: string) => {
-    const { error } = await (supabase.from("withdrawal_requests") as any).update({ status }).eq("id", id);
+    const { error } = await (supabase as any).from("withdrawal_requests").update({ status }).eq("id", id);
     if (error) return toast.error(error.message);
     toast.success(`Request marked as ${status}`);
     load();
